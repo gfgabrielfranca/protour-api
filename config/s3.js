@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const fs = require('fs');
+const path = require('path');
 
 AWS.config.update({
   accessKeyId: process.env.S3_KEY,
@@ -9,13 +10,24 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-async function upload(file) {
+function getKey(filePath) {
+  const file = filePath.split('/');
+  return file[file.length - 1];
+}
+
+async function upload(folder, file, lastFile) {
+  let key = file.filename;
+
+  if (lastFile) {
+    key = getKey(lastFile);
+  }
+
   if (process.env.NODE_ENV === 'production') {
     const response = await s3.upload({
       Bucket: process.env.S3_BUCKET,
       ACL: 'public-read',
       ContentType: file.mimetype,
-      Key: file.filename,
+      Key: `${folder}/${key}`,
       Body: fs.createReadStream(file.path),
     }).promise();
 
@@ -24,7 +36,14 @@ async function upload(file) {
     return response.Location;
   }
 
-  return `${process.env.APP_URL}/files/${file.filename}`;
+  if (lastFile) {
+    const newPath = path.resolve(__dirname, '..', 'tmp', 'uploads', folder, key);
+
+    await fs.promises.unlink(newPath);
+    await fs.promises.rename(file.path, newPath);
+  }
+
+  return `${process.env.APP_URL}/files/${folder}/${key}`;
 }
 
 module.exports.upload = upload;

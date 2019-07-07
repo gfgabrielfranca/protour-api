@@ -3,14 +3,14 @@ const path = require('path');
 const crypto = require('crypto');
 const mime = require('mime');
 
-module.exports = (field, extensions) => {
+module.exports = (folder, field, extensions) => {
   const upload = multer({
     limits: {
       fileSize: 1 * 1024 * 1024,
       files: 1,
     },
     storage: multer.diskStorage({
-      destination: path.resolve(__dirname, '..', 'tmp', 'uploads'),
+      destination: path.resolve(__dirname, '..', 'tmp', 'uploads', folder),
       filename: (req, file, cb) => {
         crypto.pseudoRandomBytes(16, (err, raw) => {
           cb(null, `${raw.toString('hex') + Date.now()}.${mime.getExtension(file.mimetype)}`);
@@ -27,13 +27,28 @@ module.exports = (field, extensions) => {
   }).single(field);
 
   return (req, res, next) => {
-    upload(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        res.status(400).send({ error: err.message });
-      } else if (err) {
-        res.status(400).send({ error: err });
-      } else if (!req.file) {
-        res.status(400).send({ error: 'No file has been passed.' });
+    upload(req, res, (error) => {
+      if (error instanceof multer.MulterError) {
+        res.status(400).send({
+          errors: [{
+            field: error.field,
+            error: error.message,
+          }],
+        });
+      } else if (error) {
+        res.status(400).send({
+          errors: [{
+            field,
+            error,
+          }],
+        });
+      } else if (!req.file && !req.params.id) {
+        res.status(400).send({
+          errors: [{
+            field,
+            error: 'No file has been passed.',
+          }],
+        });
       }
 
       return next();
