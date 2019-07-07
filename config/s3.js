@@ -10,17 +10,21 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 async function upload(file) {
-  const response = await s3.upload({
-    Bucket: process.env.S3_BUCKET,
-    ACL: 'public-read',
-    ContentType: file.mimetype,
-    Key: file.filename,
-    Body: fs.createReadStream(file.path),
-  }).promise();
+  if (process.env.NODE_ENV === 'production') {
+    const response = await s3.upload({
+      Bucket: process.env.S3_BUCKET,
+      ACL: 'public-read',
+      ContentType: file.mimetype,
+      Key: file.filename,
+      Body: fs.createReadStream(file.path),
+    }).promise();
 
-  await fs.promises.unlink(file.path);
+    await fs.promises.unlink(file.path);
 
-  return response.Location;
+    return response.Location;
+  }
+
+  return `${process.env.APP_URL}/files/${file.filename}`;
 }
 
 module.exports.upload = upload;

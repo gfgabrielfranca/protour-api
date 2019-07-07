@@ -10,7 +10,7 @@ module.exports = (field, extensions) => {
       files: 1,
     },
     storage: multer.diskStorage({
-      destination: path.resolve(__dirname, '..', 'tmp'),
+      destination: path.resolve(__dirname, '..', 'tmp', 'uploads'),
       filename: (req, file, cb) => {
         crypto.pseudoRandomBytes(16, (err, raw) => {
           cb(null, `${raw.toString('hex') + Date.now()}.${mime.getExtension(file.mimetype)}`);
