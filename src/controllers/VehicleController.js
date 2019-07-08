@@ -2,6 +2,17 @@ const fs = require('fs');
 const file = require('../utils/file');
 const { Vehicle } = require('../models');
 
+const parseBody = (body) => {
+  const parsedBody = body;
+
+  delete parsedBody.id;
+  delete parsedBody.photo;
+  delete parsedBody.createdAt;
+  delete parsedBody.updatedAt;
+
+  return parsedBody;
+};
+
 module.exports = {
   async index(req, res) {
     const vehicles = await Vehicle.findAll({
@@ -13,17 +24,13 @@ module.exports = {
 
   async store(req, res) {
     try {
-      const {
-        name, description, status, value,
-      } = req.body;
+      const body = parseBody(req.body);
 
-      let vehicle = await Vehicle.create({
-        name, description, status, value,
-      });
+      const vehicle = await Vehicle.create(body);
 
       const photo = await file.upload('vehicles', req.file);
 
-      vehicle = await vehicle.set({ photo }).save();
+      await vehicle.set({ photo }).save();
 
       return res.send(vehicle);
     } catch (err) {
@@ -52,7 +59,7 @@ module.exports = {
 
   async update(req, res) {
     try {
-      let vehicle = await Vehicle.findByPk(req.params.id);
+      const vehicle = await Vehicle.findByPk(req.params.id);
 
       if (!vehicle) {
         return res.status(404).send({
@@ -60,7 +67,9 @@ module.exports = {
         });
       }
 
-      vehicle = await vehicle.set(req.body).save();
+      const body = parseBody(req.body);
+
+      await vehicle.set(body).save();
 
       if (req.file) {
         await file.upload('vehicles', req.file, vehicle.photo);
