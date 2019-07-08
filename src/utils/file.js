@@ -1,6 +1,8 @@
 const AWS = require('aws-sdk');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const mime = require('mime');
 
 AWS.config.update({
   accessKeyId: process.env.S3_KEY,
@@ -20,11 +22,19 @@ function getFolder(filePath) {
   return file[file.length - 2];
 }
 
+const generateKey = file => new Promise((resolve) => {
+  crypto.pseudoRandomBytes(16, (err, raw) => {
+    resolve(`${raw.toString('hex') + Date.now()}.${mime.getExtension(file.mimetype)}`);
+  });
+});
+
 module.exports.upload = async (folder, file, lastFile) => {
-  let key = file.filename;
+  let key;
 
   if (lastFile) {
     key = getKey(lastFile);
+  } else {
+    key = await generateKey(file);
   }
 
   if (process.env.NODE_ENV === 'production') {
@@ -33,20 +43,12 @@ module.exports.upload = async (folder, file, lastFile) => {
       ACL: 'public-read',
       ContentType: file.mimetype,
       Key: `${folder}/${key}`,
-      Body: fs.createReadStream(file.path),
+      Body: file.buffer,
     }).promise();
-
-    await fs.promises.unlink(file.path);
 
     return response.Location;
   }
-
-  if (lastFile) {
-    const lastPath = path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key);
-
-    await fs.promises.unlink(lastPath);
-    await fs.promises.rename(file.path, lastPath);
-  }
+  await fs.promises.writeFile(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key), file.buffer);
 
   return `${process.env.APP_URL}/files/${folder}/${key}`;
 };

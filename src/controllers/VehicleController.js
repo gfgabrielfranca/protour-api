@@ -34,8 +34,6 @@ module.exports = {
 
       return res.send(vehicle);
     } catch (err) {
-      await fs.promises.unlink(req.file.path);
-
       const errors = err.errors.map(error => ({
         field: error.path,
         error: error.message,
