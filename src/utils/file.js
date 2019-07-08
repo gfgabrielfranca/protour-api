@@ -42,7 +42,7 @@ module.exports.upload = async (folder, file, lastFile) => {
   }
 
   if (lastFile) {
-    const lastPath = path.resolve(__dirname, '..', 'tmp', 'uploads', folder, key);
+    const lastPath = path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key);
 
     await fs.promises.unlink(lastPath);
     await fs.promises.rename(file.path, lastPath);
@@ -64,7 +64,7 @@ module.exports.delete = async (file) => {
     return response;
   }
 
-  const response = await fs.promises.unlink(path.resolve(__dirname, '..', 'tmp', 'uploads', folder, key));
+  const response = await fs.promises.unlink(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key));
 
   return response;
 };

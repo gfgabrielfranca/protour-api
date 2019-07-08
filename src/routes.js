@@ -1,6 +1,6 @@
 const express = require('express');
 const VehicleController = require('./controllers/VehicleController');
-const multer = require('../config/multer');
+const multer = require('./utils/multer');
 
 const routes = express.Router();
 

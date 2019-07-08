@@ -1,5 +1,5 @@
 const fs = require('fs');
-const file = require('../../config/file');
+const file = require('../utils/file');
 const { Vehicle } = require('../models');
 
 module.exports = {
@@ -90,8 +90,8 @@ module.exports = {
       });
     }
 
-    await file.delete(vehicle.photo);
     await vehicle.destroy();
+    await file.delete(vehicle.photo);
 
     return res.send();
   },
