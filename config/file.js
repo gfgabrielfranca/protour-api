@@ -15,7 +15,12 @@ function getKey(filePath) {
   return file[file.length - 1];
 }
 
-async function upload(folder, file, lastFile) {
+function getFolder(filePath) {
+  const file = filePath.split('/');
+  return file[file.length - 2];
+}
+
+module.exports.upload = async (folder, file, lastFile) => {
   let key = file.filename;
 
   if (lastFile) {
@@ -37,13 +42,29 @@ async function upload(folder, file, lastFile) {
   }
 
   if (lastFile) {
-    const newPath = path.resolve(__dirname, '..', 'tmp', 'uploads', folder, key);
+    const lastPath = path.resolve(__dirname, '..', 'tmp', 'uploads', folder, key);
 
-    await fs.promises.unlink(newPath);
-    await fs.promises.rename(file.path, newPath);
+    await fs.promises.unlink(lastPath);
+    await fs.promises.rename(file.path, lastPath);
   }
 
   return `${process.env.APP_URL}/files/${folder}/${key}`;
-}
+};
 
-module.exports.upload = upload;
+module.exports.delete = async (file) => {
+  const key = getKey(file);
+  const folder = getFolder(file);
+
+  if (process.env.NODE_ENV === 'production') {
+    const response = await s3.deleteObject({
+      Bucket: process.env.S3_BUCKET,
+      Key: `${folder}/${key}`,
+    }).promise();
+
+    return response;
+  }
+
+  const response = await fs.promises.unlink(path.resolve(__dirname, '..', 'tmp', 'uploads', folder, key));
+
+  return response;
+};

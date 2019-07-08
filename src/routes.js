@@ -1,6 +1,6 @@
 const express = require('express');
 const VehicleController = require('./controllers/VehicleController');
-const upload = require('../config/upload');
+const multer = require('../config/multer');
 
 const routes = express.Router();
 
@@ -10,7 +10,8 @@ routes.get('/', (req, res) => {
 
 routes.get('/vehicles/:id', VehicleController.show);
 routes.get('/vehicles', VehicleController.index);
-routes.post('/vehicles', upload('vehicles', 'photo', ['jpeg', 'jpg', 'png']), VehicleController.store);
-routes.put('/vehicles/:id', upload('vehicles', 'photo', ['jpeg', 'jpg', 'png']), VehicleController.update);
+routes.post('/vehicles', multer('vehicles', 'photo', ['jpeg', 'jpg', 'png']), VehicleController.store);
+routes.put('/vehicles/:id', multer('vehicles', 'photo', ['jpeg', 'jpg', 'png']), VehicleController.update);
+routes.delete('/vehicles/:id', VehicleController.destroy);
 
 module.exports = routes;

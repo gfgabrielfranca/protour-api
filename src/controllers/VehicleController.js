@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { upload } = require('../../config/s3');
+const file = require('../../config/file');
 const { Vehicle } = require('../models');
 
 module.exports = {
@@ -8,8 +8,9 @@ module.exports = {
       order: [['createdAt', 'DESC']],
     });
 
-    return res.send({ vehicles });
+    return res.send(vehicles);
   },
+
   async store(req, res) {
     try {
       const {
@@ -20,7 +21,7 @@ module.exports = {
         name, description, status, value,
       });
 
-      const photo = await upload('vehicles', req.file);
+      const photo = await file.upload('vehicles', req.file);
 
       vehicle = await vehicle.set({ photo }).save();
 
@@ -36,17 +37,19 @@ module.exports = {
       return res.status(400).send({ errors });
     }
   },
+
   async show(req, res) {
     const vehicle = await Vehicle.findByPk(req.params.id);
 
     if (vehicle) {
-      return res.send({ vehicle });
+      return res.send(vehicle);
     }
 
     return res.status(404).send({
       errors: [{ error: 'vehicle not found' }],
     });
   },
+
   async update(req, res) {
     try {
       let vehicle = await Vehicle.findByPk(req.params.id);
@@ -60,10 +63,10 @@ module.exports = {
       vehicle = await vehicle.set(req.body).save();
 
       if (req.file) {
-        await upload('vehicles', req.file, vehicle.photo);
+        await file.upload('vehicles', req.file, vehicle.photo);
       }
 
-      return res.send({ vehicle });
+      return res.send(vehicle);
     } catch (err) {
       if (req.file) {
         await fs.promises.unlink(req.file.path);
@@ -76,5 +79,20 @@ module.exports = {
 
       return res.status(400).send({ errors });
     }
+  },
+
+  async destroy(req, res) {
+    const vehicle = await Vehicle.findByPk(req.params.id);
+
+    if (!vehicle) {
+      return res.status(404).send({
+        errors: [{ error: 'vehicle not found' }],
+      });
+    }
+
+    await file.delete(vehicle.photo);
+    await vehicle.destroy();
+
+    return res.send();
   },
 };
