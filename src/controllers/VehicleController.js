@@ -1,20 +1,19 @@
-const fs = require('fs');
-const file = require('../utils/file');
+const fileSystem = require('../utils/fileSystem');
 const { Vehicle } = require('../models');
-
-const parseBody = (body) => {
-  const parsedBody = body;
-
-  delete parsedBody.id;
-  delete parsedBody.photo;
-  delete parsedBody.createdAt;
-  delete parsedBody.updatedAt;
-
-  return parsedBody;
-};
 
 module.exports = {
   async index(req, res) {
+    if (req.query.page) {
+      try {
+        const vehicles = await Vehicle.paginate(req.query.page, 2);
+        return res.send(vehicles);
+      } catch (error) {
+        return res.status(400).send({
+          errors: [{ error: error.message }],
+        });
+      }
+    }
+
     const vehicles = await Vehicle.findAll({
       order: [['createdAt', 'DESC']],
     });
@@ -23,24 +22,28 @@ module.exports = {
   },
 
   async store(req, res) {
+    let errors = fileSystem.validateFile('photo', req.file, true, 1, ['jpeg', 'jpg', 'png']);
+
     try {
-      const body = parseBody(req.body);
-
-      const vehicle = await Vehicle.create(body);
-
-      const photo = await file.upload('vehicles', req.file);
-
-      await vehicle.set({ photo }).save();
-
-      return res.send(vehicle);
+      await Vehicle.build(req.body).validate();
     } catch (err) {
-      const errors = err.errors.map(error => ({
+      errors = errors.concat(err.errors.map(error => ({
         field: error.path,
         error: error.message,
-      }));
-
-      return res.status(400).send({ errors });
+      })));
     }
+
+    if (errors.length) {
+      return res.status(400).send(errors);
+    }
+
+    const vehicle = await Vehicle.create(req.body);
+
+    const photo = await fileSystem.upload('vehicles', req.file);
+
+    await vehicle.set({ photo }).save();
+
+    return res.send(vehicle);
   },
 
   async show(req, res) {
@@ -56,36 +59,36 @@ module.exports = {
   },
 
   async update(req, res) {
+    const vehicle = await Vehicle.findByPk(req.params.id);
+
+    if (!vehicle) {
+      return res.status(404).send({
+        errors: [{ error: 'vehicle not found' }],
+      });
+    }
+
+    let errors = fileSystem.validateFile('photo', req.file, false, 1, ['jpeg', 'jpg', 'png']);
+
     try {
-      const vehicle = await Vehicle.findByPk(req.params.id);
-
-      if (!vehicle) {
-        return res.status(404).send({
-          errors: [{ error: 'vehicle not found' }],
-        });
-      }
-
-      const body = parseBody(req.body);
-
-      await vehicle.set(body).save();
-
-      if (req.file) {
-        await file.upload('vehicles', req.file, vehicle.photo);
-      }
-
-      return res.send(vehicle);
+      await vehicle.set(req.body).validate();
     } catch (err) {
-      if (req.file) {
-        await fs.promises.unlink(req.file.path);
-      }
-
-      const errors = err.errors.map(error => ({
+      errors = errors.concat(err.errors.map(error => ({
         field: error.path,
         error: error.message,
-      }));
-
-      return res.status(400).send({ errors });
+      })));
     }
+
+    if (errors.length) {
+      return res.status(400).send(errors);
+    }
+
+    await vehicle.save();
+
+    if (req.file) {
+      await fileSystem.upload('vehicles', req.file, vehicle.photo);
+    }
+
+    return res.send(vehicle);
   },
 
   async destroy(req, res) {
@@ -98,7 +101,8 @@ module.exports = {
     }
 
     await vehicle.destroy();
-    await file.delete(vehicle.photo);
+
+    await fileSystem.delete(vehicle.photo);
 
     return res.send();
   },

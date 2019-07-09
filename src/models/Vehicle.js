@@ -1,6 +1,18 @@
 const moment = require('moment');
 
 module.exports = (sequelize, DataTypes) => sequelize.define('Vehicle', {
+  createdAt: {
+    type: DataTypes.DATE,
+    get() {
+      return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD hh:mm:ss');
+    },
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    get() {
+      return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD hh:mm:ss');
+    },
+  },
   photo: {
     type: DataTypes.STRING,
     unique: true,
@@ -9,6 +21,9 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Vehicle', {
     type: DataTypes.STRING(128),
     allowNull: false,
     validate: {
+      notNull: {
+        msg: 'name cannot be null',
+      },
       notEmpty: {
         msg: 'name can not be empty',
       },
@@ -37,32 +52,38 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Vehicle', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
     validate: {
-      notEmpty: {
-        msg: 'value can not be empty',
+      notNull: {
+        msg: 'value cannot be null',
       },
       isNumeric: {
         msg: 'value must be numeric',
       },
+      notEmpty: {
+        msg: 'value can not be empty',
+      },
       min: {
         args: 1,
-        msg: 'status must be greater than 0',
+        msg: 'value must be greater than 0',
       },
       max: {
         args: 99999999.99,
-        msg: 'status must be less than 99999999.99',
+        msg: 'value must be less than 99999999.99',
       },
     },
-  },
-  createdAt: {
-    type: DataTypes.DATE,
     get() {
-      return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD hh:mm:ss');
+      return +this.getDataValue('value');
     },
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    get() {
-      return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD hh:mm:ss');
+},
+{
+  hooks: {
+    beforeCreate: (vehicle) => {
+      const parsedVehicle = vehicle;
+
+      delete parsedVehicle.dataValues.id;
+      delete parsedVehicle.dataValues.photo;
+
+      return parsedVehicle;
     },
   },
 });

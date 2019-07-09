@@ -12,15 +12,15 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-function getKey(filePath) {
+const getKey = (filePath) => {
   const file = filePath.split('/');
   return file[file.length - 1];
-}
+};
 
-function getFolder(filePath) {
+const getFolder = (filePath) => {
   const file = filePath.split('/');
   return file[file.length - 2];
-}
+};
 
 const generateKey = file => new Promise((resolve) => {
   crypto.pseudoRandomBytes(16, (err, raw) => {
@@ -58,15 +58,40 @@ module.exports.delete = async (file) => {
   const folder = getFolder(file);
 
   if (process.env.NODE_ENV === 'production') {
-    const response = await s3.deleteObject({
+    await s3.deleteObject({
       Bucket: process.env.S3_BUCKET,
       Key: `${folder}/${key}`,
     }).promise();
 
-    return response;
+    return;
   }
 
-  const response = await fs.promises.unlink(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key));
+  await fs.promises.unlink(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key));
+};
 
-  return response;
+module.exports.validateFile = (field, file, required, maxSize, extensions) => {
+  const errors = [];
+
+  if (!file && required) {
+    errors.push({
+      field,
+      error: `${field} was not passed`,
+    });
+  } else if (file) {
+    if (file.size > maxSize * 1024 * 1024) {
+      errors.push({
+        field,
+        error: `${field} must be less than ${maxSize}mb`,
+      });
+    }
+
+    if (!extensions.includes(mime.getExtension(file.mimetype))) {
+      errors.push({
+        field,
+        error: `${field} must be of the types: ${extensions.join(', ')}`,
+      });
+    }
+  }
+
+  return errors;
 };
