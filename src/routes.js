@@ -1,8 +1,7 @@
 const express = require('express');
-const multer = require('multer');
+const validatePage = require('./middlewares/validatePage');
+const validateCreate = require('./middlewares/validateCreate');
 const VehicleController = require('./controllers/VehicleController');
-
-const upload = multer({ storage: multer.memoryStorage() });
 
 const routes = express.Router();
 
@@ -11,9 +10,9 @@ routes.get('/', (req, res) => {
 });
 
 routes.get('/vehicles/:id', VehicleController.show);
-routes.get('/vehicles', VehicleController.index);
-routes.post('/vehicles', upload.single('photo'), VehicleController.store);
-routes.put('/vehicles/:id', upload.single('photo'), VehicleController.update);
+routes.get('/vehicles', validatePage, VehicleController.index);
+routes.post('/vehicles', validateCreate('Vehicle'), VehicleController.store);
+routes.put('/vehicles/:id', VehicleController.update);
 routes.delete('/vehicles/:id', VehicleController.destroy);
 
 module.exports = routes;

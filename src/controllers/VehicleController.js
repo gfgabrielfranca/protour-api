@@ -3,41 +3,12 @@ const { Vehicle } = require('../models');
 
 module.exports = {
   async index(req, res) {
-    if (req.query.page) {
-      try {
-        const vehicles = await Vehicle.paginate(req.query.page, 2);
-        return res.send(vehicles);
-      } catch (error) {
-        return res.status(400).send({
-          errors: [{ error: error.message }],
-        });
-      }
-    }
-
-    const vehicles = await Vehicle.findAll({
-      order: [['createdAt', 'DESC']],
-    });
-
+    const vehicles = await Vehicle.paginate(req.query.page, 2);
     return res.send(vehicles);
   },
 
   async store(req, res) {
-    let errors = fileSystem.validateFile('photo', req.file, true, 1, ['jpeg', 'jpg', 'png']);
-
-    try {
-      await Vehicle.build(req.body).validate();
-    } catch (err) {
-      errors = errors.concat(err.errors.map(error => ({
-        field: error.path,
-        error: error.message,
-      })));
-    }
-
-    if (errors.length) {
-      return res.status(400).send(errors);
-    }
-
-    const vehicle = await Vehicle.create(req.body);
+    const vehicle = await Vehicle.create(req.parsedBody);
 
     const photo = await fileSystem.upload('vehicles', req.file);
 
@@ -47,15 +18,17 @@ module.exports = {
   },
 
   async show(req, res) {
-    const vehicle = await Vehicle.findByPk(req.params.id);
+    let vehicle;
 
-    if (vehicle) {
-      return res.send(vehicle);
+    try {
+      vehicle = await Vehicle.findById(req.params.id);
+    } catch (error) {
+      return res.status(400).send({
+        errors: [{ error: error.message }],
+      });
     }
 
-    return res.status(404).send({
-      errors: [{ error: 'vehicle not found' }],
-    });
+    return res.send(vehicle);
   },
 
   async update(req, res) {
