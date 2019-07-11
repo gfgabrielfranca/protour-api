@@ -69,10 +69,8 @@ module.exports.delete = async (file) => {
   await fs.promises.unlink(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key));
 };
 
-module.exports.validateFile = (field, file, validations) => {
+module.exports.validateFile = (field, file, required, maxSize, extensions) => {
   const errors = [];
-
-  const { required, maxSize, extensions } = validations;
 
   if (!file && required) {
     errors.push({
