@@ -48,7 +48,9 @@ module.exports.upload = async (folder, file, lastFile) => {
 
     return response.Location;
   }
-  await fs.promises.writeFile(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key), file.buffer);
+  const filePath = path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key);
+
+  await fs.promises.writeFile(filePath, file.buffer);
 
   return `${process.env.APP_URL}/files/${folder}/${key}`;
 };
@@ -69,7 +71,8 @@ module.exports.delete = async (file) => {
   await fs.promises.unlink(path.resolve(__dirname, '..', '..', 'tmp', 'uploads', folder, key));
 };
 
-module.exports.validateFile = (field, file, required, maxSize, extensions) => {
+module.exports.validateFile = (field, file, validations) => {
+  const { required, maxSize, extensions } = validations;
   const errors = [];
 
   if (!file && required) {

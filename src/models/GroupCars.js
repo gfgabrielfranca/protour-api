@@ -1,6 +1,6 @@
 const moment = require('moment');
 
-module.exports = (sequelize, DataTypes) => sequelize.define('Vehicle', {
+module.exports = (sequelize, DataTypes) => sequelize.define('GroupCars', {
   createdAt: {
     type: DataTypes.DATE,
     get() {
@@ -77,13 +77,13 @@ module.exports = (sequelize, DataTypes) => sequelize.define('Vehicle', {
 },
 {
   hooks: {
-    beforeCreate: (vehicle) => {
-      const parsedVehicle = vehicle;
+    beforeCreate: (GroupCars) => {
+      const parsedGroupCars = GroupCars;
 
-      delete parsedVehicle.dataValues.id;
-      delete parsedVehicle.dataValues.photo;
+      delete parsedGroupCars.dataValues.id;
+      delete parsedGroupCars.dataValues.photo;
 
-      return parsedVehicle;
+      return parsedGroupCars;
     },
   },
 });

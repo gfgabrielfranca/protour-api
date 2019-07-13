@@ -3,20 +3,7 @@ const { Vehicle } = require('../models');
 
 module.exports = {
   async index(req, res) {
-    if (req.query.page) {
-      try {
-        const vehicles = await Vehicle.paginate(req.query.page, 2);
-        return res.send(vehicles);
-      } catch (error) {
-        return res.status(400).send({
-          errors: [{ error: error.message }],
-        });
-      }
-    }
-
-    const vehicles = await Vehicle.findAll({
-      order: [['createdAt', 'DESC']],
-    });
+    const vehicles = await Vehicle.paginate(req.query.page, 2);
 
     return res.send(vehicles);
   },
@@ -49,13 +36,13 @@ module.exports = {
   async show(req, res) {
     const vehicle = await Vehicle.findByPk(req.params.id);
 
-    if (vehicle) {
-      return res.send(vehicle);
+    if (!vehicle) {
+      return res.status(404).send({
+        errors: [{ error: 'vehicle not found' }],
+      });
     }
 
-    return res.status(404).send({
-      errors: [{ error: 'vehicle not found' }],
-    });
+    return res.send(vehicle);
   },
 
   async update(req, res) {
@@ -92,17 +79,17 @@ module.exports = {
   },
 
   async destroy(req, res) {
-    const vehicle = await Vehicle.findByPk(req.params.id);
+    const result = await Vehicle.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
 
-    if (!vehicle) {
+    if (!result) {
       return res.status(404).send({
         errors: [{ error: 'vehicle not found' }],
       });
     }
-
-    await vehicle.destroy();
-
-    await fileSystem.delete(vehicle.photo);
 
     return res.send();
   },
