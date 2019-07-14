@@ -66,10 +66,15 @@ Object.keys(db).forEach((modelName) => {
   });
 
   db[modelName].customCreate = async (body, file, include) => {
-    const { field, validate } = db[modelName].file;
+    let field;
+    let validate;
 
-    let errors;
-    if (file) {
+    if (db[modelName].file) {
+      ({ field, validate } = db[modelName].file);
+    }
+
+    let errors = [];
+    if (field) {
       errors = fileSystem.validateFile(field, file, validate);
     }
 
@@ -85,7 +90,7 @@ Object.keys(db).forEach((modelName) => {
 
     const model = await db[modelName].create(body, { include });
 
-    if (file) {
+    if (field) {
       const filePath = await fileSystem.upload(pluralize(modelName.toLowerCase()), file);
 
       await model.set({ [field]: filePath }).save();
@@ -99,7 +104,7 @@ Object.keys(db).forEach((modelName) => {
       const error = {
         status: 400,
         errors: {
-          errors: [{ error: 'invalid id' }],
+          errors: { error: 'invalid id' },
         },
       };
 
@@ -112,7 +117,7 @@ Object.keys(db).forEach((modelName) => {
       const error = {
         status: 404,
         errors: {
-          errors: [{ error: `${modelName.toLowerCase()} not found` }],
+          errors: { error: `${modelName.toLowerCase()} not found` },
         },
       };
 
@@ -121,34 +126,100 @@ Object.keys(db).forEach((modelName) => {
 
     await result.destroy();
 
-    if (!db[modelName].file) {
+    if (db[modelName].file) {
       await fileSystem.delete(result[db[modelName].file.field]);
     }
   };
 
-  db[modelName].show = async (id) => {
+  db[modelName].show = async (id, include) => {
     if (id && (!Number.isInteger(+id) || +id < 1)) {
       const error = {
         status: 400,
         errors: {
-          errors: [{ error: 'invalid id' }],
+          errors: { error: 'invalid id' },
         },
       };
 
       throw (error);
     }
 
-    const result = await db[modelName].findByPk(id);
+    const result = await db[modelName].findByPk(id, { include });
 
     if (!result) {
       const error = {
         status: 404,
         errors: {
-          errors: [{ error: `${modelName.toLowerCase()} not found` }],
+          errors: { error: `${modelName.toLowerCase()} not found` },
         },
       };
       throw (error);
     }
+
+    return result;
+  };
+
+  db[modelName].customUpdate = async (id, body, file, include) => {
+    if (id && (!Number.isInteger(+id) || +id < 1)) {
+      const error = {
+        status: 400,
+        errors: {
+          errors: { error: 'invalid id' },
+        },
+      };
+
+      throw (error);
+    }
+
+    const result = await db[modelName].findByPk(id, { include });
+
+    if (!result) {
+      const error = {
+        status: 404,
+        errors: {
+          errors: { error: `${modelName.toLowerCase()} not found` },
+        },
+      };
+      throw (error);
+    }
+
+    let field;
+    let validate;
+
+    if (db[modelName].file) {
+      ({ field, validate } = db[modelName].file);
+    }
+
+    let errors = [];
+    if (file) {
+      errors = fileSystem.validateFile(field, file, validate);
+    }
+
+    try {
+      const parsedBody = body;
+      if (field) {
+        delete parsedBody[field];
+      }
+      await result.set(parsedBody).validate();
+    } catch (error) {
+      errors = errors.concat(error);
+    }
+
+    if (errors.length) {
+      const error = {
+        status: 400,
+        errors,
+      };
+      throw (error);
+    }
+
+    if (file) {
+      const filePath = await fileSystem.upload(
+        pluralize(modelName.toLowerCase()), file, result[field],
+      );
+      result.set({ [field]: filePath });
+    }
+
+    await result.save();
 
     return result;
   };

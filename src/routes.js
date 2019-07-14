@@ -1,6 +1,8 @@
 const express = require('express');
 const multer = require('multer');
-const CarController = require('./controllers/CarController');
+const VehicleController = require('./controllers/VehicleController');
+const ServiceController = require('./controllers/ServiceController');
+const ClientController = require('./controllers/ClientController');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -10,10 +12,22 @@ routes.get('/', (req, res) => {
   res.send(process.env.APP_NAME || 'API');
 });
 
-routes.get('/cars/:id', CarController.show);
-routes.get('/cars', CarController.index);
-routes.post('/cars', upload.single('photo'), CarController.store);
-routes.put('/cars/:id', upload.single('photo'), CarController.update);
-routes.delete('/cars/:id', CarController.destroy);
+routes.get('/vehicles/:id', VehicleController.show);
+routes.get('/vehicles', VehicleController.index);
+routes.post('/vehicles', upload.single('photo'), VehicleController.store);
+routes.put('/vehicles/:id', upload.single('photo'), VehicleController.update);
+routes.delete('/vehicles/:id', VehicleController.destroy);
+
+routes.get('/services/:id', ServiceController.show);
+routes.get('/services', ServiceController.index);
+routes.post('/services', upload.single('icon'), ServiceController.store);
+routes.put('/services/:id', upload.single('icon'), ServiceController.update);
+routes.delete('/services/:id', ServiceController.destroy);
+
+routes.get('/clients/:id', ClientController.show);
+routes.get('/clients', ClientController.index);
+routes.post('/clients', upload.none(), ClientController.store);
+routes.put('/clients/:id', upload.none(), ClientController.update);
+routes.delete('/clients/:id', ClientController.destroy);
 
 module.exports = routes;

@@ -1,5 +1,5 @@
 module.exports = {
-  up: (queryInterface, Sequelize) => queryInterface.createTable('GroupCars', {
+  up: (queryInterface, Sequelize) => queryInterface.createTable('Vehicles', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -11,11 +11,11 @@ module.exports = {
       unique: true,
     },
     name: {
-      type: Sequelize.STRING(128),
+      type: Sequelize.STRING(256),
       allowNull: false,
     },
     description: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(256),
     },
     status: {
       type: Sequelize.BOOLEAN,
@@ -35,5 +35,5 @@ module.exports = {
       type: Sequelize.DATE,
     },
   }),
-  down: queryInterface => queryInterface.dropTable('GroupCars'),
+  down: queryInterface => queryInterface.dropTable('Vehicles'),
 };

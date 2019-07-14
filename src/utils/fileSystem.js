@@ -31,8 +31,12 @@ const generateKey = file => new Promise((resolve) => {
 module.exports.upload = async (folder, file, lastFile) => {
   let key;
 
+  this.delete(lastFile);
+
   if (lastFile) {
     key = getKey(lastFile);
+    key = key.split('.');
+    key = `${key[0]}.${mime.getExtension(file.mimetype)}`;
   } else {
     key = await generateKey(file);
   }
