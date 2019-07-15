@@ -3,6 +3,8 @@ const path = require('path');
 
 const app = express();
 
+app.use(express.json());
+
 app.use(require('./routes'));
 
 app.use('/files', express.static(path.resolve(__dirname, '..', 'tmp', 'uploads')));

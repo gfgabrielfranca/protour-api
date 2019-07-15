@@ -97,6 +97,13 @@ module.exports = (sequelize, DataTypes) => {
     },
   };
 
+  Service.associate = (models) => {
+    Service.belongsToMany(models.Reservation, {
+      through: 'ServiceReservation',
+      as: 'reservations',
+    });
+  };
+
   const parseService = (service) => {
     const parsedService = service;
 
