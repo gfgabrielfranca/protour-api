@@ -115,6 +115,13 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
+  //   Client.associate = (models) => {
+  //     Client.belongsTo(models.Reservation, {
+  //       through: 'Reservations',
+  //     //   as: 'reservations',
+  //     });
+  //   };
+
   const parseClient = (client) => {
     const parsedCient = client;
 

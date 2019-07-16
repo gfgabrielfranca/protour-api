@@ -3,7 +3,7 @@ const { Client } = require('../models');
 module.exports = {
   async index(req, res) {
     try {
-      const clients = await Client.paginate(req.query.page, 2);
+      const clients = await Client.paginate(req.query.page, 10);
       return res.send(clients);
     } catch (errors) {
       return res.status(400).send({ errors });

@@ -1,28 +1,29 @@
-const { Reservation, Service } = require('../models');
+const {
+  Reservation, Service, Client, Vehicle,
+} = require('../models');
 
 module.exports = {
   async index(req, res) {
     try {
-    //   const reservations = await Reservation.paginate(req.query.page, 2, [
-    //     {
-    //       model: Service,
-    //       as: 'services',
-    //       through: { attributes: [] },
-    //     },
-    //   ]);
+      const reservations = await Reservation.paginate(req.query.page, 10, [
+        {
+          model: Service,
+          as: 'services',
+          through: { attributes: [] },
+        },
+        {
+          model: Client,
+          as: 'client',
+        },
+        {
+          model: Vehicle,
+          as: 'vehicle',
+        },
+      ]);
 
-      const reservations = await Reservation.findAll({
-        include: [
-          {
-            model: Service,
-            as: 'services',
-            through: { attributes: [] },
-          },
-        ],
-      });
       return res.send(reservations);
     } catch (errors) {
-      return res.status(400).send({ errors });
+      return res.status(400).send(errors.message);
     }
   },
 
@@ -35,16 +36,16 @@ module.exports = {
         ({ services, ...data } = req.body);
       }
 
-      //   const reservation = await Reservation.customCreate(data, null, [
-      //     {
-      //       model: Service,
-      //       as: 'services',
-      //       through: { attributes: [] },
-      //     },
-      //   ]);
+      const client = await Client.show(data.clientId);
+      const vehicle = await Vehicle.show(data.vehicleId);
 
-      const reservation = await Reservation.create(data);
-      reservation.setServices(services);
+      const reservation = await Reservation.customCreate(data);
+      await reservation.setServices(services);
+      const servicesGet = await reservation.getServices();
+
+      reservation.dataValues.services = servicesGet;
+      reservation.dataValues.client = client;
+      reservation.dataValues.vehicle = vehicle;
 
       return res.send(reservation);
     } catch (errors) {
@@ -54,7 +55,21 @@ module.exports = {
 
   async show(req, res) {
     try {
-      const reservation = await Reservation.show(req.params.id);
+      const reservation = await Reservation.show(req.params.id, [
+        {
+          model: Service,
+          as: 'services',
+          through: { attributes: [] },
+        },
+        {
+          model: Client,
+          as: 'client',
+        },
+        {
+          model: Vehicle,
+          as: 'vehicle',
+        },
+      ]);
       return res.send(reservation);
     } catch (error) {
       return res.status(error.status).send(error.errors);
@@ -63,7 +78,14 @@ module.exports = {
 
   async update(req, res) {
     try {
-      const reservation = await Reservation.customUpdate(req.params.id, req.body, req.file);
+      let services;
+      let data;
+
+      if (req.body) {
+        ({ services, ...data } = req.body);
+      }
+
+      const reservation = await Reservation.customUpdate(req.params.id, data, req.file);
       return res.send(reservation);
     } catch (error) {
       return res.status(error.status).send(error.errors);

@@ -3,7 +3,7 @@ const { Service } = require('../models');
 module.exports = {
   async index(req, res) {
     try {
-      const services = await Service.paginate(req.query.page, 2);
+      const services = await Service.paginate(req.query.page, 10);
       return res.send(services);
     } catch (errors) {
       return res.status(400).send({ errors });
