@@ -1,12 +1,15 @@
 const express = require('express');
-const path = require('path');
+const mongoose = require('mongoose');
 
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(require('./routes'));
 
-app.use('/files', express.static(path.resolve(__dirname, '..', 'tmp', 'uploads')));
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+});
 
-app.listen(process.env.PORT || 3333);
+app.listen(3333);

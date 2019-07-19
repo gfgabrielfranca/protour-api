@@ -1,18 +1,10 @@
-version: '3.7'
+version: '3.1'
 
 services:
-  db:
-    image: postgres
+  mongo:
+    image: mongo
     restart: always
     environment:
-      POSTGRES_PASSWORD: protour
-      POSTGRES_USER: protour
-      POSTGRES_DB: protour
+      MONGO_INITDB_DATABASE: protour-api
     ports:
-    - 5432:5432
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
+      - 27017:27017
