@@ -9,7 +9,12 @@
   "dependencies": {
     "dotenv": "^8.0.0",
     "express": "^4.17.1",
-    "mongoose": "^5.6.5"
+    "indicative": "^7.2.0",
+    "indicative-utils": "^7.0.1",
+    "mime": "^2.4.4",
+    "moment": "^2.24.0",
+    "mongoose": "^5.6.5",
+    "multer": "^1.4.2"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
