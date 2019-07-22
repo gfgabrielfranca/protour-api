@@ -1,4 +1,4 @@
-const { validateCreate } = require('../validators/vehicle');
+const { validateStore } = require('../validators/vehicleValidator');
 const Vehicle = require('../models/Vehicle');
 
 module.exports = {
@@ -7,34 +7,25 @@ module.exports = {
     res.json(vehicles);
   },
 
+  async show(req, res) {
+    res.json('show');
+  },
+
   async store(req, res) {
     try {
-      const photo = req.files.find((file) => {
-        if (file.fieldname === 'photo') {
-          return file;
-        }
-        return null;
-      });
-
-      const body = await validateCreate({ ...req.body, photo });
-      const vehicle = await Vehicle.create(body);
-      return res.json(vehicle);
+      const body = await validateStore(req.body, req.files);
+      //   const vehicle = await Vehicle.create(body);
+      return res.send(body);
     } catch (error) {
       return res.json(error);
     }
   },
 
   async update(req, res) {
-    // const privateAttributes = ['_id', 'createdAt', 'photoURL'];
-    // delete req.body.id;
+    res.json('update');
+  },
 
-    // const vehicle = await Vehicle.updateOne(req.body);
-    // res.json(req.body);
-    try {
-      const test = await Joi.validate(req.body, update, { abortEarly: false });
-      return res.json(test);
-    } catch (error) {
-      return res.json(error);
-    }
+  async destroy(req, res) {
+    res.json('destroy');
   },
 };
