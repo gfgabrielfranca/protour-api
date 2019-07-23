@@ -1,9 +1,18 @@
-const { Vehicle } = require('../models');
+const { Vehicle, Reservation } = require('../models');
 
 module.exports = {
   async index(req, res) {
     try {
       const vehicles = await Vehicle.paginate(req.query.page, 10);
+
+      vehicles.forEach((vehicle, index) => {
+        // const vehiclesAvailable = await Reservation.count({
+        //   where: { vehicleId: vehicle.id },
+        // });
+
+        vehicles[index].dataValues.vehiclesAvailable = 0;
+      });
+
       return res.send(vehicles);
     } catch (errors) {
       return res.status(400).send({ errors });
@@ -13,6 +22,11 @@ module.exports = {
   async store(req, res) {
     try {
       const vehicle = await Vehicle.customCreate(req.body, req.file);
+      const vehiclesAvailable = await Reservation.count({
+        where: { vehicleId: vehicle.id },
+      });
+
+      vehicle.vehiclesAvailable = vehiclesAvailable;
       return res.send(vehicle);
     } catch (errors) {
       return res.status(400).send({ errors });

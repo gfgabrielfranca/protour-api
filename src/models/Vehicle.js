@@ -84,6 +84,32 @@ module.exports = (sequelize, DataTypes) => {
         return +Number(this.getDataValue('value')).toFixed(2);
       },
     },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'quantity cannot be null',
+        },
+        isNumeric: {
+          msg: 'quantity must be numeric',
+        },
+        notEmpty: {
+          msg: 'quantity can not be empty',
+        },
+        min: {
+          args: 1,
+          msg: 'quantity must be greater than 0',
+        },
+        max: {
+          args: 999999999,
+          msg: 'quantity must be less than 999999999',
+        },
+      },
+      get() {
+        return +this.getDataValue('quantity');
+      },
+    },
   });
 
   Vehicle.file = {
