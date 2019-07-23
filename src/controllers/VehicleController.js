@@ -1,9 +1,12 @@
 const { validateCreate } = require('../validators/vehicle');
-const Vehicle = require('../models/Vehicle');
+const { Vehicle } = require('../models/');
+// const Vehicle = require('../models/Vehicle');
 
 module.exports = {
   async index(req, res) {
-    const vehicles = await Vehicle.find();
+    // const vehicles = await Vehicle.find();
+
+    const vehicles = Vehicle.show();
     res.json(vehicles);
   },
 
