@@ -15,7 +15,7 @@ module.exports = {
       type: Sequelize.DATE,
     },
     status: {
-      type: Sequelize.ENUM('PENDENTE', 'APROVADO', 'CANCELADO'),
+      type: Sequelize.ENUM('PENDENTE', 'COMPLETO', 'CANCELADO', 'EXPIRADO'),
       allowNull: false,
     },
     clientId: {

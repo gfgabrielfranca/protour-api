@@ -36,11 +36,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     quantity: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       validate: {
-        notNull: {
-          msg: 'quantity cannot be null',
-        },
         isNumeric: {
           msg: 'quantity must be numeric',
         },
@@ -58,6 +55,18 @@ module.exports = (sequelize, DataTypes) => {
       },
       get() {
         return +this.getDataValue('quantity');
+      },
+    },
+    default: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      validate: {
+        isBoolean(value) {
+          if (value !== true && value !== false) {
+            throw new Error('default must be boolean');
+          }
+        },
       },
     },
     value: {

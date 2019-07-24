@@ -4,6 +4,7 @@ const VehicleController = require('./controllers/VehicleController');
 const ServiceController = require('./controllers/ServiceController');
 const ClientController = require('./controllers/ClientController');
 const ReservationController = require('./controllers/ReservationController');
+const LocationsController = require('./controllers/LocationController');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -36,5 +37,11 @@ routes.get('/reservations', ReservationController.index);
 routes.post('/reservations', upload.none(), ReservationController.store);
 routes.put('/reservations/:id', upload.none(), ReservationController.update);
 routes.delete('/reservations/:id', ReservationController.destroy);
+
+routes.get('/locations/:id', LocationsController.show);
+routes.get('/locations', LocationsController.index);
+routes.post('/locations', upload.none(), LocationsController.store);
+routes.put('/locations/:id', upload.none(), LocationsController.update);
+routes.delete('/locations/:id', LocationsController.destroy);
 
 module.exports = routes;

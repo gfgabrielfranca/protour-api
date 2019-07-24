@@ -45,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     status: {
-      type: DataTypes.ENUM('PENDENTE', 'APROVADO', 'CANCELADO'),
+      type: DataTypes.ENUM('PENDENTE', 'COMPLETO', 'CANCELADO', 'EXPIRADO'),
       allowNull: false,
       validate: {
         notNull: {
@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         isIn: {
           args: [['PENDENTE', 'APROVADO', 'CANCELADO']],
-          msg: 'status should be equal to PENDENTE, APROVADO, CANCELADO',
+          msg: 'status should be equal to PENDENTE, COMPLETO, CANCELADO, EXPIRADO',
         },
       },
 
@@ -67,6 +67,30 @@ module.exports = (sequelize, DataTypes) => {
         },
         isNumeric: {
           msg: 'clientId must be numeric',
+        },
+      },
+    },
+    reservationLocation: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'reservationLocation cannot be null',
+        },
+        isNumeric: {
+          msg: 'reservationLocation must be numeric',
+        },
+      },
+    },
+    devolutionLocation: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'devolutionLocation cannot be null',
+        },
+        isNumeric: {
+          msg: 'devolutionLocation must be numeric',
         },
       },
     },
@@ -96,6 +120,17 @@ module.exports = (sequelize, DataTypes) => {
 
     Reservation.belongsTo(models.Vehicle, {
       as: 'vehicle',
+    });
+
+    Reservation.belongsTo(models.Location, {
+      as: 'reservationLocations',
+      foreignKey: 'reservationLocation',
+
+    });
+
+    Reservation.belongsTo(models.Location, {
+      as: 'devolutionLocations',
+      foreignKey: 'devolutionLocation',
     });
   };
 

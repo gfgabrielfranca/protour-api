@@ -1,5 +1,5 @@
 const {
-  Reservation, Service, Client, Vehicle,
+  Reservation, Service, Client, Vehicle, Location,
 } = require('../models');
 
 module.exports = {
@@ -18,6 +18,14 @@ module.exports = {
         {
           model: Vehicle,
           as: 'vehicle',
+        },
+        {
+          model: Location,
+          as: 'reservationLocations',
+        },
+        {
+          model: Location,
+          as: 'devolutionLocations',
         },
       ]);
 
@@ -38,6 +46,8 @@ module.exports = {
 
       const client = await Client.show(data.clientId);
       const vehicle = await Vehicle.show(data.vehicleId);
+      const reservationLocation = await Location.show(data.reservationLocation);
+      const devolutionLocation = await Location.show(data.devolutionLocation);
 
       const reservation = await Reservation.customCreate(data);
       await reservation.setServices(services);
@@ -46,6 +56,8 @@ module.exports = {
       reservation.dataValues.services = servicesGet;
       reservation.dataValues.client = client;
       reservation.dataValues.vehicle = vehicle;
+      reservation.dataValues.reservationLocation = reservationLocation;
+      reservation.dataValues.devolutionLocation = devolutionLocation;
 
       return res.send(reservation);
     } catch (errors) {
@@ -68,6 +80,14 @@ module.exports = {
         {
           model: Vehicle,
           as: 'vehicle',
+        },
+        {
+          model: Location,
+          as: 'reservationLocations',
+        },
+        {
+          model: Location,
+          as: 'devolutionLocations',
         },
       ]);
       return res.send(reservation);
