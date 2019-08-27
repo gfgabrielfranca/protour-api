@@ -57,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
           msg: 'status cannot be null',
         },
         isIn: {
-          args: [['PENDENTE', 'APROVADO', 'CANCELADO']],
+          args: [['PENDENTE', 'COMPLETO', 'CANCELADO', 'EXPIRADO']],
           msg: 'status should be equal to PENDENTE, COMPLETO, CANCELADO, EXPIRADO',
         },
       },
