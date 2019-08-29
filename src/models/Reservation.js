@@ -66,10 +66,10 @@ module.exports = (sequelize, DataTypes) => {
           msg: 'devolution must be a date',
         },
         isAfterCustom(value) {
-            if (!moment(value).isAfter(this.reservation)) {
-              throw new Error('devolution must be after reservation');
-            }
-        }
+          if (!moment(value).isAfter(this.reservation)) {
+            throw new Error('devolution must be after reservation');
+          }
+        },
       },
       get() {
         return moment(this.getDataValue('devolution')).format('YYYY-MM-DD HH:mm');
