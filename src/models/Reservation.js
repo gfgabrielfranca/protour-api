@@ -14,6 +14,32 @@ module.exports = (sequelize, DataTypes) => {
         return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss');
       },
     },
+    totalValue: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'value cannot be null',
+        },
+        isNumeric: {
+          msg: 'value must be numeric',
+        },
+        notEmpty: {
+          msg: 'value can not be empty',
+        },
+        min: {
+          args: 1,
+          msg: 'value must be greater than 0',
+        },
+        max: {
+          args: 99999999.99,
+          msg: 'value must be less than 99999999.99',
+        },
+      },
+      get() {
+        return +Number(this.getDataValue('totalValue')).toFixed(2);
+      },
+    },
     reservation: {
       allowNull: false,
       type: DataTypes.DATE,
