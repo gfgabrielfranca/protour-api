@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Vehicle, Reservation } = require('../models');
 
 module.exports = {
@@ -15,7 +16,10 @@ module.exports = {
       const start = async () => {
         await asyncForEach(vehicles, async (vehicle, index) => {
           const vehiclesInUse = await Reservation.count({
-            where: { vehicleId: vehicle.id },
+            where: {
+              vehicleId: vehicle.id,
+              status: 'PENDENTE',
+            },
           });
 
           vehicles[index].dataValues.vehiclesInUse = vehiclesInUse;
@@ -46,7 +50,12 @@ module.exports = {
       const vehicle = await Vehicle.show(req.params.id);
 
       const vehiclesInUse = await Reservation.count({
-        where: { vehicleId: vehicle.id },
+        where: {
+          vehicleId: vehicle.id,
+          status: {
+            [Op.not]: 'PENDENTE',
+          },
+        },
       });
 
       vehicle.dataValues.vehiclesInUse = vehiclesInUse;
@@ -62,7 +71,12 @@ module.exports = {
       const vehicle = await Vehicle.customUpdate(req.params.id, req.body, req.file);
 
       const vehiclesInUse = await Reservation.count({
-        where: { vehicleId: vehicle.id },
+        where: {
+          vehicleId: vehicle.id,
+          status: {
+            [Op.not]: 'PENDENTE',
+          },
+        },
       });
 
       vehicle.dataValues.vehiclesInUse = vehiclesInUse;
