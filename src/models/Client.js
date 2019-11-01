@@ -113,6 +113,18 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
     },
+    address: {
+      type: DataTypes.STRING(256),
+      validate: {
+        notEmpty: {
+          msg: 'address cannot be empty',
+        },
+        len: {
+          args: [0, 256],
+          msg: 'address cannot be longer than 256 characters',
+        },
+      },
+    },
   });
 
   //   Client.associate = (models) => {

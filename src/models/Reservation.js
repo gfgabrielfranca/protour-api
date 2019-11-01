@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { CronJob } = require('cron');
 
 module.exports = (sequelize, DataTypes) => {
   const Reservation = sequelize.define('Reservation', {
@@ -174,6 +175,12 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   Reservation.beforeCreate(parseReservation);
+
+  Reservation.afterCreate((reservation) => {
+    new CronJob(moment(reservation.devolution), () => {
+      Reservation.update({ ...reservation, status: 'EXPIRADO' }, { where: { id: reservation.id } });
+    }).start();
+  });
 
   return Reservation;
 };
